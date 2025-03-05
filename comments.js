@@ -1,34 +1,23 @@
-//create a web server
-const express = require('express');
-const app = express();
-const port = 3000;
-const fs = require('fs');
-const path = require('path');
+// Create web server
+var express = require('express');
+var app = express();
 
-//parse the request body
-app.use(express.json());
+// Set port
+app.set('port', process.env.PORT || 3000);
 
-//GET /api/comments
-app.get('/api/comments', (req, res) => {
-  //read the comments.json file
-  const comments = JSON.parse(fs.readFileSync(path.join(__dirname, 'comments.json'), 'utf-8'));
-  //send the comments as a response
-  res.json(comments);
+// Set views
+app.set('views', __dirname + '/views');
+app.set('view engine', 'jade');
+
+// Set static files
+app.use(express.static(__dirname + '/public'));
+
+// Set routes
+app.get('/', function(req, res) {
+  res.render('index', {title: 'Comments'});
 });
 
-//POST /api/comments
-app.post('/api/comments', (req, res) => {
-  //read the comments.json file
-  const comments = JSON.parse(fs.readFileSync(path.join(__dirname, 'comments.json'), 'utf-8'));
-  //add the new comment to the comments array
-  comments.push(req.body);
-  //write the comments array back to the file
-  fs.writeFileSync(path.join(__dirname, 'comments.json'), JSON.stringify(comments));
-  //send the new comment as a response
-  res.json(req.body);
-});
-
-//start the server
-app.listen(port, () => {
-  console.log(`Server is listening at http://localhost:${port}`);
+// Listen
+app.listen(app.get('port'), function() {
+  console.log('Server started on http://localhost:' + app.get('port') + '; Press Ctrl-C to terminate.');
 });
