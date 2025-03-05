@@ -1,53 +1,34 @@
-// create a web server that listens on port 3000
-var express = require('express');
-var bodyParser = require('body-parser');
-var app = express();
-var fs = require('fs');
+//create a web server
+const express = require('express');
+const app = express();
+const port = 3000;
+const fs = require('fs');
+const path = require('path');
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+//parse the request body
+app.use(express.json());
 
-app.get('/comments', function(req, res) {
-  fs.readFile('comments.json', 'utf8', function(err, data) {
-    if (err) {
-      console.log(err);
-      res.status(500).send('An error occurred');
-      return;
-    }
-    res.setHeader('Content-Type', 'application/json');
-    res.send(data);
-  });
+//GET /api/comments
+app.get('/api/comments', (req, res) => {
+  //read the comments.json file
+  const comments = JSON.parse(fs.readFileSync(path.join(__dirname, 'comments.json'), 'utf-8'));
+  //send the comments as a response
+  res.json(comments);
 });
 
-app.post('/comments', function(req, res) {
-  fs.readFile('comments.json', 'utf8', function(err, data) {
-    if (err) {
-      console.log(err);
-      res.status(500).send('An error occurred');
-      return;
-    }
-    var comments = JSON.parse(data);
-
-    var newComment = {
-      id: Date.now(),
-      text: req.body.text,
-      author: req.body.author
-    };
-
-    comments.push(newComment);
-
-    fs.writeFile('comments.json', JSON.stringify(comments, null, 2), function(err) {
-      if (err) {
-        console.log(err);
-        res.status(500).send('An error occurred');
-        return;
-      }
-      res.status(201).send('Comment added');
-    });
-  });
+//POST /api/comments
+app.post('/api/comments', (req, res) => {
+  //read the comments.json file
+  const comments = JSON.parse(fs.readFileSync(path.join(__dirname, 'comments.json'), 'utf-8'));
+  //add the new comment to the comments array
+  comments.push(req.body);
+  //write the comments array back to the file
+  fs.writeFileSync(path.join(__dirname, 'comments.json'), JSON.stringify(comments));
+  //send the new comment as a response
+  res.json(req.body);
 });
 
-app.listen(3000, function() {
-    
-  console.log('Server is listening on port 3000');
+//start the server
+app.listen(port, () => {
+  console.log(`Server is listening at http://localhost:${port}`);
 });
